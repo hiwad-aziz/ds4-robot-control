@@ -58,12 +58,35 @@ class Motor:
 
 
 class RobotController(Controller):
+    """
+    Provides an interface to control a 4-wheeled skid steer robot with a Dualshock 4 controller.
+
+    Controls:
+        - L2: drive forward
+        - R2: drive backward
+        - L1: turn left in place
+        - R1: turn right in place
+        - L3: adjust turn factor
+    """
+
     def __init__(self, **kwargs):
         Controller.__init__(self, **kwargs)
         self.left_motors = Motor(forward_pin=23, backward_pin=24, pwm=12)
         self.right_motors = Motor(forward_pin=22, backward_pin=27, pwm=13)
         self.speed_left = 1
         self.speed_right = 1
+        self.turn_factor_left = 1
+        self.turn_factor_right = 1
+
+    def __stop(self):
+        self.left_motors.stop()
+        self.right_motors.stop()
+
+    def __reset_speed(self):
+        self.speed_left = 1
+        self.speed_right = 1
+
+    def __reset_turn_factors(self):
         self.turn_factor_left = 1
         self.turn_factor_right = 1
 
@@ -75,8 +98,7 @@ class RobotController(Controller):
         self.right_motors.forward(self.speed_right)
 
     def on_R2_release(self):
-        self.left_motors.stop()
-        self.right_motors.stop()
+        self.__stop()
 
     def on_L2_press(self, value):
         self.speed_left = abs(value) / DS4_VALUE_OFFSET * self.turn_factor_left
@@ -86,8 +108,7 @@ class RobotController(Controller):
         self.right_motors.backward(self.speed_right)
 
     def on_L2_release(self):
-        self.left_motors.stop()
-        self.right_motors.stop()
+        self.__stop()
 
     def on_L3_right(self, value):
         self.turn_factor_left = 1
@@ -100,8 +121,23 @@ class RobotController(Controller):
         self.turn_factor_right = 1
 
     def on_L3_release(self):
-        self.turn_factor_left = 1
-        self.turn_factor_right = 1
+        self.__reset_turn_factors()
+
+    def on_R1_press(self):
+        self.__reset_speed()
+        self.left_motors.forward(self.speed_left)
+        self.right_motors.backward(self.speed_right)
+
+    def on_R1_release(self):
+        self.__stop()
+
+    def on_L1_press(self):
+        self.__reset_speed
+        self.left_motors.backward(self.speed_left)
+        self.right_motors.forward(self.speed_right)
+
+    def on_L1_release(self):
+        self.__stop()
 
 
 controller = RobotController(
