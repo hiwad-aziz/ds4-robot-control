@@ -1,8 +1,16 @@
 from pyPS4Controller.controller import Controller
 import RPi.GPIO as GPIO
 
-
+# DS4 stick values are in the range [-32767, 32767].
+# This variable is necessary to calculate the turn factors.
 DS4_VALUE_OFFSET = 32767
+# GPIO Pins (BCM)
+LEFT_MOTORS_FORWARD_PIN = 23
+LEFT_MOTORS_BACKWARD_PIN = 24
+LEFT_MOTORS_PWM_PIN = 12
+RIGHT_MOTORS_FORWARD_PIN = 22
+RIGHT_MOTORS_BACKWARD_PIN = 27
+RIGHT_MOTORS_PWM_PIN = 13
 
 
 class Motor:
@@ -71,8 +79,10 @@ class RobotController(Controller):
 
     def __init__(self, **kwargs):
         Controller.__init__(self, **kwargs)
-        self.left_motors = Motor(forward_pin=23, backward_pin=24, pwm=12)
-        self.right_motors = Motor(forward_pin=22, backward_pin=27, pwm=13)
+        self.left_motors = Motor(
+            forward_pin=LEFT_MOTORS_FORWARD_PIN, backward_pin=LEFT_MOTORS_BACKWARD_PIN, pwm=LEFT_MOTORS_PWM_PIN)
+        self.right_motors = Motor(forward_pin=RIGHT_MOTORS_FORWARD_PIN,
+                                  backward_pin=RIGHT_MOTORS_BACKWARD_PIN, pwm=RIGHT_MOTORS_PWM_PIN)
         self.speed_left = 1
         self.speed_right = 1
         self.turn_factor_left = 1
@@ -142,5 +152,4 @@ class RobotController(Controller):
 
 controller = RobotController(
     interface="/dev/input/js0", connecting_using_ds4drv=False)
-# you can start listening before controller is paired, as long as you pair it within the timeout window
 controller.listen(timeout=60)
